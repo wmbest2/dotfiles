@@ -1,9 +1,61 @@
 " vim:fdm=marker
 " ENV Vars {{{
 let $GOPATH=expand('$GOPATH')
+let $POWERLINE_HOME=expand('$POWERLINE_HOME')
+" }}}
+" Vundle Setup {{{
+
+filetype off
+
+set rtp+=~/.vim/bundle/Vundle.vim/
+call vundle#begin()
+
+" }}}
+" Plugins {{{
+
+Plugin 'EasyGrep'
+Plugin 'Gundo'
+Plugin 'Tabular'
+Plugin 'The-NERD-Commenter'
+Plugin 'The-NERD-tree'
+Plugin 'UltiSnips'
+Plugin 'abolish.vim'
+Plugin 'acx0/Conque-Shell'
+Plugin 'altercation/vim-colors-solarized'
+Plugin 'camelcasemotion'
+Plugin 'ctrlp.vim'
+Plugin 'fatih/vim-go'
+Plugin 'fugitive.vim'
+Plugin 'gmarik/Vundle.vim'
+Plugin 'honza/vim-snippets'
+Plugin 'hsanson/vim-android'
+Plugin 'lervag/vimtex'
+Plugin 'majutsushi/tagbar'
+Plugin 'matze/vim-tex-fold'
+Plugin 'powerline/powerline', {'rtp': 'powerline/bindings/vim/'}
+Plugin 'rizzatti/dash.vim'
+Plugin 'rizzatti/funcoo.vim'
+Plugin 'scratch.vim'
+Plugin 'suan/vim-instant-markdown'
+Plugin 'syntastic'
+Plugin 'tpope/vim-dispatch'
+Plugin 'tpope/vim-surround'
+Plugin 'udalov/kotlin-vim'
+Plugin 'unimpaired.vim'
+Plugin 'vim-multiple-cursors'
+
+
+call vundle#end()
+filetype plugin indent on
+
 " }}}
 " Theme {{{
 
+" Always show statusline
+set laststatus=2
+
+" Use 256 colours (Use this setting only if your terminal supports 256 colours)
+set t_Co=256
 
 set gfn=Source\ Code\ Pro:h14
 set background=dark
@@ -41,51 +93,6 @@ set backspace=indent,eol,start
 let python_highlight_all = 1
 let java_highlight_all = 1
 
-
-" }}}
-" Vundle Setup {{{
-
-filetype off
-
-set rtp+=~/.vim/bundle/vundle/
-call vundle#rc()
-
-" }}}
-" Plugins {{{
-
-Plugin 'gmarik/vundle'
-Plugin 'Tabular'
-Plugin 'UltiSnips'
-Plugin 'camelcasemotion'
-Plugin 'ctrlp.vim'
-Plugin 'scratch.vim'
-Plugin 'acx0/Conque-Shell'
-Plugin 'abolish.vim'
-Plugin 'tpope/vim-surround'
-Plugin 'The-NERD-Commenter'
-Plugin 'The-NERD-tree'
-Plugin 'fugitive.vim'
-Plugin 'hsanson/vim-android'
-Plugin 'EasyGrep'
-Plugin 'unimpaired.vim'
-Plugin 'majutsushi/tagbar'
-Plugin 'rizzatti/funcoo.vim'
-Plugin 'rizzatti/dash.vim'
-Plugin 'Gundo'
-Plugin 'altercation/vim-colors-solarized'
-Plugin 'kotlin-vim'
-Plugin 'syntastic'
-Plugin 'ultisnips'
-Plugin 'vim-dispatch'
-Plugin 'vim-go'
-Plugin 'vim-instant-markdown'
-Plugin 'vim-multiple-cursors'
-Plugin 'vim-snippets'
-Plugin 'vim-tex-fold'
-Plugin 'vimtex'
-
-
-filetype plugin indent on
 
 " }}}
 " Functions {{{
