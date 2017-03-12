@@ -1,6 +1,18 @@
+#!/usr/bin/env bash
+
+{ # this ensures the entire script is downloaded #
+
+set -e
 
 # VARIABLES
 DOTFILES="wmbest2/dotfiles"
+
+# colors
+reset="\033[0m"
+red="\033[31m"
+yellow="\033[33m"
+green="\033[32m"
+cyan="\033[36m"
 
 # log functions
 log() {
@@ -50,7 +62,7 @@ install_homebrew() {
     success "Installed Homebrew"
     [ waslinux -eq 1 ] && log "Linux brew may require running\n echo 'export PATH=\"$HOME/.linuxbrew/bin:$PATH\"' >> ~/.bashrc"
   else
-    log "Homebrew alread installed"
+    log "Homebrew already installed"
   fi
 }
 
@@ -131,3 +143,4 @@ install_pip
 pip_install "mkdocs"
 pip_install "mkdocs-material"
 
+}
