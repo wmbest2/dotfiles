@@ -138,4 +138,7 @@ POWERLINE_BASH_SELECT=1
 . $POWERLINE_HOME/bindings/bash/powerline.sh
 
 # added by travis gem
-[ -f /Users/wbest/.travis/travis.sh ] && source /Users/wbest/.travis/travis.sh
+ifsource ~/.travis/travis.sh
+
+# Add Hub as git alternative
+eval "$(hub alias -s)"
