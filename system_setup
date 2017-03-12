@@ -131,7 +131,9 @@ brew_install "hub"
 brew_install "python"
 brew_install "chruby"
 brew_install "pow"
-brew_install "powify"
+
+header "Installing Gems"
+gem install powify
 
 #Install Dotfiles
 header "Installing dot files"
