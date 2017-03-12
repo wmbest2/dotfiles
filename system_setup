@@ -1,0 +1,133 @@
+
+# VARIABLES
+DOTFILES="wmbest2/dotfiles"
+
+# log functions
+log() {
+  printf "$cyan$1$reset\n"
+}
+
+header() {
+  printf "\n$green== $1 ==$reset\n"
+}
+
+success() {
+  printf "👍 $green $1$reset\n"
+}
+
+warn() {
+  printf "$yellow[WARNING] $1$reset\n"
+}
+
+error() {
+  printf "$red[ERROR] $1$reset\n"
+}
+
+command_exists() {
+  type "$1" &> /dev/null;
+}
+
+os() {
+    case "$OSTYPE" in
+      solaris*) return "SOLARIS" ;;
+      darwin*)  return "OSX" ;; 
+      linux*)   return "LINUX" ;;
+      bsd*)     return "BSD" ;;
+      msys*)    return "WINDOWS" ;;
+      *)        return "unknown: $OSTYPE" ;;
+    esac
+}
+
+install_homebrew() {
+  if ! command_exists brew; then
+    local wasLinux=0
+    if [ os -eq "OSX" ]; then
+        /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    elif [ os -eq "LINUX" ]; then
+        ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install)"
+        waslinux=1
+    fi
+    success "Installed Homebrew"
+    [ waslinux -eq 1 ] && log "Linux brew may require running\n echo 'export PATH=\"$HOME/.linuxbrew/bin:$PATH\"' >> ~/.bashrc"
+  else
+    log "Homebrew alread installed"
+  fi
+}
+
+brew_install() {
+  local package=$1
+
+  if [[ -d "${brew_cellar}/${package}" ]]; then
+    log "${package} already installed"
+  elif [[ "${package}" == "build-essential" ]]; then
+    true
+  else
+    brew install $package
+    success "Installed ${package}"
+  fi
+}
+
+install_pip() {
+    if ! command_exists pip; then
+        header "Installing pip"
+        sudo easy_install pip
+        success "Installed pip"
+    else
+        success "pip already installed"
+    fi
+}
+
+pip_install() {
+  local package=$1
+
+  pip list | grep ${package}
+  if [ $? = 0 ]; then
+    log "${package} already installed"
+  else
+    pip install $package
+    success "Installed ${package}"
+  fi
+}
+
+setup_config() {
+    git clone --bare git@github.com:$DOTFILES.git $HOME/.cfg
+    function config {
+       /usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME $@
+    }
+    mkdir -p .config-backup
+    config checkout
+    if [ $? = 0 ]; then
+      success "Checked out config.";
+      else
+        warn "Backing up pre-existing dot files.";
+        config checkout 2>&1 | egrep "\s+\." | awk {'print $1'} | xargs -I{} mv {} .config-backup/{}
+        config checkout
+        success "Checked out config.";
+    fi;
+    config config status.showUntrackedFiles no
+}
+
+## Main Script
+
+# Install homebrew if it isn't already
+header "Checking for Homebrew"
+install_homebrew
+brew_cellar=$(brew --cellar)
+
+header "Installing Brew Dependencies"
+brew_install "hub"
+brew_install "python"
+brew_install "chruby"
+brew_install "pow"
+brew_install "powify"
+
+#Install Dotfiles
+header "Installing dot files"
+setup_config
+
+# Install pip
+header "Installing pip Dependencies"
+install_pip
+pip_install "mkdocs"
+pip_install "mkdocs-material"
+
