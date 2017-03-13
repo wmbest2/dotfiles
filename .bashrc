@@ -136,6 +136,7 @@ export PATH=$HOME/Library/Python/2.7/bin:$PATH
 powerline-daemon -q
 POWERLINE_BASH_CONTINUATION=1
 POWERLINE_BASH_SELECT=1
+POWERLINE_CONFIG_COMMAND=powerline-config
 . $POWERLINE_HOME/bindings/bash/powerline.sh
 
 # added by travis gem
