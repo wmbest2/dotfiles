@@ -50,6 +50,16 @@ os() {
     esac
 }
 
+install_ruby() {
+    local version=$1
+    ruby-install | grep ${version}
+    if [ $? = 0 ]; then
+        ruby-install ruby ${version}
+        source /usr/local/opt/chruby/share/chruby/chruby.sh
+        chruby ruby-${version}
+    fi
+}
+
 install_homebrew() {
   if ! command_exists brew; then
     local wasLinux=0
@@ -117,16 +127,14 @@ brew_install "pow"
 brew_install "yadm"
 
 header "Installing Ruby"
-ruby-install ruby 2.2.2
-source /usr/local/opt/chruby/share/chruby/chruby.sh
-chruby ruby-2.2.2
+install_ruby 2.3.3
 
 header "Installing Gems"
 gem install powify
 
 #Install Dotfiles
 header "Installing dot files"
-yadm clone git@github.com:wmbest2/dotfiles.git
+yadm clone git@github.com:$DOTFILES.git
 
 # Install pip
 header "Installing pip Dependencies"
