@@ -152,5 +152,6 @@ header "Installing pip Dependencies"
 install_pip
 pip_install "mkdocs"
 pip_install "mkdocs-material"
+pip_install "powerline-status"
 
 }
