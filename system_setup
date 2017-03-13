@@ -4,6 +4,16 @@
 
 # VARIABLES
 DOTFILES="wmbest2/dotfiles"
+ruby_version=2.3.3
+
+case "$OSTYPE" in
+  solaris*) os="SOLARIS" ;;
+  darwin*)  os="OSX" ;; 
+  linux*)   os="LINUX" ;;
+  bsd*)     os="BSD" ;;
+  msys*)    os="WINDOWS" ;;
+  *)        os="unknown: $OSTYPE" ;;
+esac
 
 # colors
 reset="\033[0m"
@@ -37,17 +47,6 @@ command_exists() {
   type "$1" &> /dev/null;
 }
 
-os() {
-    case "$OSTYPE" in
-      solaris*) return "SOLARIS" ;;
-      darwin*)  return "OSX" ;; 
-      linux*)   return "LINUX" ;;
-      bsd*)     return "BSD" ;;
-      msys*)    return "WINDOWS" ;;
-      *)        return "unknown: $OSTYPE" ;;
-    esac
-}
-
 install_ruby() {
     local version=$1
     ruby-install | grep ${version} &> /dev/null
@@ -72,9 +71,9 @@ install_dotfiles() {
 install_homebrew() {
   if ! command_exists brew; then
     local wasLinux=0
-    if [ os -eq "OSX" ]; then
+    if [[ "$os" == "OSX" ]]; then
         /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-    elif [ os -eq "LINUX" ]; then
+    elif [[ "$os" == "LINUX" ]]; then
         ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install)"
         waslinux=1
     fi
@@ -120,6 +119,16 @@ pip_install() {
   fi
 }
 
+install_mac_dependencies() {
+    if [ "$os" == "OSX" ]; then
+        header "Installing Mac only Dependencies"
+        brew install Caskroom/cask/iterm2
+        brew install Caskroom/cask/alfred
+    else
+        header "Skipping Mac only Dependencies"
+    fi
+}
+
 ## Main Script
 
 # Install homebrew if it isn't already
@@ -135,10 +144,12 @@ brew_install "chruby"
 brew_install "pow"
 brew_install "yadm"
 
+install_mac_dependencies
+
 header "Installing Ruby"
-install_ruby 2.3.3
+install_ruby ${ruby_version}
 source /usr/local/opt/chruby/share/chruby/chruby.sh
-chruby ruby-${version}
+chruby ruby-${ruby_version}
 
 header "Installing Gems"
 gem install powify
@@ -153,5 +164,7 @@ install_pip
 pip_install "mkdocs"
 pip_install "mkdocs-material"
 pip_install "powerline-status"
+
+source ~/.bash_profile
 
 }
