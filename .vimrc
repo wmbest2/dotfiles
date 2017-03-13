@@ -7,11 +7,13 @@ let $POWERLINE_HOME=expand('$POWERLINE_HOME')
 "
 " download Vundle if missing
 let vundle_readme=expand('~/.vim/bundle/Vundle.vim/README.md')
+let installedVundle=0
 if !filereadable(vundle_readme) 
     echo "Installing Vundle.."
     echo ""
     silent !mkdir -p ~/.vim/bundle
     silent !git clone https://github.com/VundleVim/Vundle.vim ~/.vim/bundle/Vundle.vim
+    let installedVundle=1
 endif
 
 filetype off
@@ -56,6 +58,13 @@ Plugin 'vim-multiple-cursors'
 
 call vundle#end()
 filetype plugin indent on
+
+
+if installedVundle == 1
+    echo "Installing Vundles, please ignore key map error messages"
+    echo ""
+    :PluginInstall
+endif
 
 " }}}
 " Theme {{{
