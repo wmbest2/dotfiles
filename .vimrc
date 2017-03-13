@@ -4,6 +4,15 @@ let $GOPATH=expand('$GOPATH')
 let $POWERLINE_HOME=expand('$POWERLINE_HOME')
 " }}}
 " Vundle Setup {{{
+"
+" download Vundle if missing
+let vundle_readme=expand('~/.vim/bundle/vundle/README.md')
+if !filereadable(vundle_readme) 
+    echo "Installing Vundle.."
+    echo ""
+    silent !mkdir -p ~/.vim/bundle
+    silent !git clone https://github.com/VundleVim/Vundle.vim ~/.vim/bundle/vundle
+endif
 
 filetype off
 
