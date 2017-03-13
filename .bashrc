@@ -131,6 +131,7 @@ source /usr/local/share/chruby/auto.sh
 
 PYTHON_ROOT=~/Library/Python/2.7/lib/python/site-packages
 export POWERLINE_HOME=$PYTHON_ROOT/powerline
+export PATH=$HOME/Library/Python/2.7/bin:$PATH
 
 powerline-daemon -q
 POWERLINE_BASH_CONTINUATION=1
