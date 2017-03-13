@@ -64,6 +64,7 @@ install_dotfiles() {
     if [ $? = 1 ]; then
         log "yadm already setup, fetching lastest changes"
         yadm fetch
+        yadm pull
     fi
     success "dot files installed"
 }
