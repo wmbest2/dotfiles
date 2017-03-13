@@ -92,7 +92,7 @@ install_pip() {
 pip_install() {
   local package=$1
 
-  pip list | grep ${package}
+  pip list --format=columns | grep ${package}
   if [ $? = 0 ]; then
     log "${package} already installed"
   else
