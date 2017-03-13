@@ -53,7 +53,7 @@ os() {
 install_ruby() {
     local version=$1
     ruby-install | grep ${version}
-    if [ $? = 0 ]; then
+    if [ $? = 1 ]; then
         ruby-install ruby ${version}
         source /usr/local/opt/chruby/share/chruby/chruby.sh
         chruby ruby-${version}
