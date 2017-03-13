@@ -127,10 +127,16 @@ install_homebrew
 brew_cellar=$(brew --cellar)
 
 header "Installing Brew Dependencies"
+brew_install ruby-install -HEAD
 brew_install "hub"
 brew_install "python"
 brew_install "chruby"
 brew_install "pow"
+
+header "Installing Ruby"
+ruby-install ruby 2.2.2
+source /usr/local/opt/chruby/share/chruby/chruby.sh
+chruby ruby-2.2.2
 
 header "Installing Gems"
 gem install powify
