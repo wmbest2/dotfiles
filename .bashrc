@@ -16,6 +16,7 @@ ifsource() {
 
 ifsource ~/.env
 ifsource ~/.bash_aliases
+ifsource ~/.nerdtree_aliases
 
 
 # don't put duplicate lines or lines starting with space in the history.
