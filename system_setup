@@ -101,24 +101,6 @@ pip_install() {
   fi
 }
 
-setup_config() {
-    git clone --bare git@github.com:$DOTFILES.git $HOME/.cfg
-    function config {
-       /usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME $@
-    }
-    mkdir -p .config-backup
-    config checkout
-    if [ $? = 0 ]; then
-      success "Checked out config.";
-      else
-        warn "Backing up pre-existing dot files.";
-        config checkout 2>&1 | egrep "\s+\." | awk {'print $1'} | xargs -I{} mv {} .config-backup/{}
-        config checkout
-        success "Checked out config.";
-    fi;
-    config config status.showUntrackedFiles no
-}
-
 ## Main Script
 
 # Install homebrew if it isn't already
@@ -132,6 +114,7 @@ brew_install "hub"
 brew_install "python"
 brew_install "chruby"
 brew_install "pow"
+brew_install "yadm"
 
 header "Installing Ruby"
 ruby-install ruby 2.2.2
@@ -143,7 +126,7 @@ gem install powify
 
 #Install Dotfiles
 header "Installing dot files"
-setup_config
+yadm clone git@github.com:wmbest2/dotfiles.git
 
 # Install pip
 header "Installing pip Dependencies"
