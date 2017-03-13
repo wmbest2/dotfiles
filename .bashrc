@@ -127,9 +127,9 @@ fi
 source /usr/local/share/chruby/chruby.sh
 source /usr/local/share/chruby/auto.sh
 
-[ -d "/Users/wbest/Work/8b/bin" ] && export PATH="/Users/wbest/Work/8b/bin:$PATH"
+[ -d "~/Work/8b/bin" ] && export PATH="~/Work/8b/bin:$PATH"
 
-PYTHON_ROOT=/Users/wbest/Library/Python/2.7/lib/python/site-packages
+PYTHON_ROOT=~/Library/Python/2.7/lib/python/site-packages
 export POWERLINE_HOME=$PYTHON_ROOT/powerline
 
 powerline-daemon -q
