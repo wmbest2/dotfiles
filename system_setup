@@ -2,8 +2,6 @@
 
 { # this ensures the entire script is downloaded #
 
-set -e
-
 # VARIABLES
 DOTFILES="wmbest2/dotfiles"
 
@@ -59,6 +57,15 @@ install_ruby() {
     else
         success "Ruby ${version} already installed"
     fi
+}
+
+install_dotfiles() {
+    $(yadm clone git@github.com:$DOTFILES.git)
+    if [ $? = 1 ]; then
+        log "yadm already setup, fetching lastest changes"
+        yadm fetch
+    fi
+    success "dot files installed"
 }
 
 install_homebrew() {
@@ -137,10 +144,7 @@ gem install powify
 
 #Install Dotfiles
 header "Installing dot files"
-yadm clone git@github.com:$DOTFILES.git
-if [ $? = 0 ]; then
-    yadm fetch
-fi
+install_dotfiles
 
 # Install pip
 header "Installing pip Dependencies"
