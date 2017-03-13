@@ -106,7 +106,7 @@ pip_install() {
   if [ $? = 0 ]; then
     log "${package} already installed"
   else
-    pip install $package
+    pip install --user $package
     success "Installed ${package}"
   fi
 }
@@ -135,6 +135,9 @@ gem install powify
 #Install Dotfiles
 header "Installing dot files"
 yadm clone git@github.com:$DOTFILES.git
+if [ $? = 0 ]; then
+    yadm fetch
+fi
 
 # Install pip
 header "Installing pip Dependencies"
