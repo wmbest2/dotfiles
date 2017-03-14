@@ -17,6 +17,7 @@ ifsource() {
 ifsource ~/.env
 ifsource ~/.bash_aliases
 ifsource ~/.nerdtree_aliases
+ifsource $(brew --prefix)/etc/bash_completion
 
 
 # don't put duplicate lines or lines starting with space in the history.
