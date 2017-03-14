@@ -29,7 +29,7 @@ Plugin 'Gundo'
 Plugin 'Tabular'
 Plugin 'The-NERD-Commenter'
 Plugin 'The-NERD-tree'
-Plugin 'UltiSnips'
+"Plugin 'UltiSnips'
 Plugin 'abolish.vim'
 Plugin 'acx0/Conque-Shell'
 Plugin 'altercation/vim-colors-solarized'
@@ -186,12 +186,14 @@ let NERDTreeChDirMode = 2
 " Ctrl-P Fuzzy Finder {{{
 
 set wildignore+=\.git                  "" General Files
-set wildignore+=\bin,\gen,\docs,\build "" Android Files
+set wildignore+=\bin,\gen,\build "" Android Files
 set wildignore+=\south,\piston         "" Django File
 set wildignore+=\node_modules          "" Node Files
 set wildignore+=*.swp,*.swo            "" VIM Files
 set wildignore+=*.png,*.jpg            "" Binary Files
 set wildignore+=*.jar,*.class          "" Java Files
+set wildignore+=\site,\gradle,gradlew*,*.iml
+set wildignore-=\docs
 
 " }}}
 " Plugin Setup {{{
