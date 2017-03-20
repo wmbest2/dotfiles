@@ -1,0 +1,166 @@
+global !p
+def pathToPackage(p, f):
+    index = p.find('kotlin/')
+    count = 7
+
+    if index == -1:
+        index = p.find('java/')
+        count = 5
+
+    if index == -1:
+        index = p.find('src/')
+        count = 4
+
+    end = p.find(f) - 1
+    return p[index+count:end].replace('/','.')
+
+import re
+
+def classHeader(fn):
+    return 'package ' + pathToPackage(path, fn) + '\n\npublic class ' + fn[0:fn.find('.')] + ' {'
+
+def classFooter(fn):
+    return '}'
+
+def lowerDash(f):
+    f = re.sub(r'm?([A-Z])', lambda pat: "_" + pat.group(1).lower(), f)
+    if (f[0] == '_'):
+        f = f[1:]
+    return f
+
+def name(f):
+    return f[0:f.find('.')]
+
+def idFromName(f):
+    f = f[0:f.find('.') + 1]
+    f = re.sub(r'([A-Z])', lambda pat: "_" + pat.group(1).lower(), f)
+    if f.find('_fragment') != -1:
+        f = 'frag' + f[0:f.find('_fragment')]
+    elif f.find('_activity') != -1:
+        f = 'act' + f[0:f.find('_activity')]
+    else:
+        f = f[1:]
+
+    return f
+
+def upperFirst(name):
+    return name[0:1].upper() + name[1:]
+
+member = r'(\s*)(?:public)\s+([\w\[\]]+)\s+(\w+)(?:\s+=.*)?;'
+
+def memberTo(f, mod):
+    f = re.sub(member, mod, f, flags=re.M)
+    return f
+
+endglobal
+
+priority 1
+snippet pack "Full Package" b
+package `!p snip.rv = pathToPackage(path, fn)`
+endsnippet
+
+priority -1
+snippet pack "Import Package" 
+`!p snip.rv = pathToPackage(path, fn)`.$1
+endsnippet
+
+snippet di "Dependency(Dagger) inject"
+public var $1: $2? = null
+	@Inject set${3:(@$4 arg) { $$1 = arg }}
+endsnippet
+
+snippet frag "Fragment"
+package `!p snip.rv = pathToPackage(path, fn)`
+
+import android.content.*
+import android.os.Bundle
+import android.${1:support.v4.}app.Fragment
+import android.support.v7.widget.Toolbar
+import android.widget.*
+import android.view.*
+
+
+import kotlin.properties.Delegates
+import kotlinx.android.synthetic.`!p snip.rv=idFromName(fn)`.view.*
+
+public class `!p snip.rv=name(fn)`: ${2:RxAppCompat}Fragment() {
+    companion object {
+        public val TAG: String = "`!p snip.rv=name(fn)`"
+    }
+
+    public var toolbar: Toolbar by Delegates.notNull()
+
+    override public fun onCreateView(inflater: LayoutInflater, container: ViewGroup, savedState: Bundle?): View  {
+        val result = inflater.inflate(R.layout.`!p snip.rv=idFromName(fn)`, container, false)
+        toolbar = result.findViewById(R.id.toolbar) as Toolbar 
+
+        setSupportActionBar(toolbar)
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true)
+
+        return result
+    }
+
+    override public fun onDestroyView() {
+        super.onDestroyView()
+    }
+}
+endsnippet
+
+snippet act "Activity"
+package `!p snip.rv = pathToPackage(path, fn)`
+
+import android.content.*
+import android.os.Bundle
+import android.${1:support.v7.}app.AppCompatActivity
+import android.support.v7.widget.Toolbar
+import android.widget.*
+import android.view.*
+
+import kotlin.properties.Delegates
+import kotlinx.android.synthetic.`!p snip.rv=idFromName(fn)`.*
+
+public class `!p snip.rv=name(fn)`: ${2:AppCompat}Activity() {
+    companion object {
+        public val TAG: String = "`!p snip.rv=name(fn)`"
+    }
+
+    override public fun onCreate(savedState: Bundle?): View  {
+		super.onCreate(savedState)
+        setContentView(R.layout.`!p snip.rv=idFromName(fn)`)
+    }
+}
+endsnippet
+
+snippet vh "ViewHolder"
+public class ${1:MyViewHolder}(v: View): ${2:RecyclerView.}ViewHolder(v) {
+	$0
+}
+
+endsnippet
+
+snippet adapt "Adapter" 
+public class ${1:MyAdapter}(): RecyclerView.Adapter<${2:MyViewHolder}>() {
+    val items = mutableListOf<${3:String}>()
+
+    override public fun onCreateViewHolder(parent: ViewGroup, viewType: Int): $2 {
+        return $2(parent.inflate(${4:android.R.layout.simple_list_item_1}, false))
+    }
+ 
+    override public fun onBindViewHolder(holder: $2, position: Int) {
+        val item = items[position]
+		$5
+    } 
+
+    ${6:override public fun onBindViewHolder(holder: DeviceViewHolder, position: Int, payload: List<Any>) {
+        if (payload.isEmpty()) {
+            onBindViewHolder(holder, position)
+        } else {
+			$7
+        }
+    }}
+ 
+    override public fun getItemCount() = items.size
+
+	$0
+}
+endsnippet

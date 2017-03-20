@@ -1,0 +1,61 @@
+snippet node "XML Node" !b
+<${1:TextView}
+    android:id="@+id/${2:text}"
+    android:layout_width="${3:match_parent}"
+    android:layout_height="${4:match_parent}"$5
+    />
+endsnippet
+snippet rel "XML parent" !b
+<${1:RelativeLayout}$2
+    android:id="@+id/${3:text}"
+    android:layout_width="${4:match_parent}"
+    android:layout_height="${5:match_parent}"$6
+    >
+    $0
+</$1>
+endsnippet
+snippet xml "XML header" !b
+<?xml version="1.0" encoding="utf-8" ?>
+endsnippet
+snippet ns "XML header" !b
+xmlns:android="http://schemas.android.com/apk/res/android"
+endsnippet
+snippet lay "Layout Attributes" !b
+android:layout_${1:width}="$2"
+endsnippet
+
+snippet res "Resources Files" !b
+<?xml version="1.0" encoding="utf-8" ?>
+<resources>
+    $0
+</resources>
+endsnippet
+
+snippet layout "LayoutStarter"
+<?xml version="1.0" encoding="utf-8" ?>
+<${1:RelativeLayout}$2
+	xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="${4:match_parent}"
+    android:layout_height="${5:match_parent}"$6
+    >
+    $0
+</$1>
+endsnippet
+
+snippet "stri?n?g?" "Item in resource" rb
+<string name="$1">$2</string>
+endsnippet
+
+snippet dim "Dimension" !b
+<dimen name="$1">$2</dimen>$0
+endsnippet
+
+snippet item "Item in resource" !b
+<item name="${1:android:$2}">$3</item>
+endsnippet
+
+snippet sty "Style Resource" !b
+<style name="$1" $2>
+    $0
+</style>
+endsnippet
