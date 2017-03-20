@@ -29,7 +29,7 @@ Plugin 'Gundo'
 Plugin 'Tabular'
 Plugin 'The-NERD-Commenter'
 Plugin 'The-NERD-tree'
-"Plugin 'UltiSnips'
+Plugin 'SirVer/ultiSnips'
 Plugin 'abolish.vim'
 Plugin 'acx0/Conque-Shell'
 Plugin 'altercation/vim-colors-solarized'
@@ -198,12 +198,11 @@ set wildignore-=\docs
 " }}}
 " Plugin Setup {{{
 
-let g:github_user='wmbest2@gmail.com'
-let g:github_token='bbef7885ea5ad08291e0f72ba194864c'
-
 let g:gofmt_command = "/usr/local/go/bin/gofmt"
 
 let g:syntastic_java_javac_classpath=$ANDROID_HOME+"/platforms/android-25/*.jar"
+
+let g:UltiSnipsSnippetDirectories = ['~/.vim/UltiSnips', 'UltiSnips']
 
 " }}}
 " Filetype Specific Settings {{{ 
