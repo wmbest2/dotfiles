@@ -203,6 +203,8 @@ let g:github_token='bbef7885ea5ad08291e0f72ba194864c'
 
 let g:gofmt_command = "/usr/local/go/bin/gofmt"
 
+let g:syntastic_java_javac_classpath=$ANDROID_HOME+"/platforms/android-25/*.jar"
+
 " }}}
 " Filetype Specific Settings {{{ 
 
@@ -217,6 +219,8 @@ au FileType java set makeprg=ant\ debug
 au FileType java set efm=%A\ %#[javac]\ %f:%l:\ %m,%-Z\ %#[javac]\ %p^,%-C%.%#
 au FileType modula2 set filetype=markdown
 au FileType javascript map <Leader>j !python -m json.tool<CR>
+
+au FileType ruby,cucumber set sw=2 ts=2
 inoremap <silent> <Bar>   <Bar><Esc>:call <SID>align()<CR>a
 
 if has("autocmd") 
