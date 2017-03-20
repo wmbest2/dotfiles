@@ -122,6 +122,7 @@ pip_install() {
 install_mac_dependencies() {
     if [ "$os" == "OSX" ]; then
         header "Installing Mac only Dependencies"
+        brew install coreutils findutils gnu-tar gnu-sed gawk gnutls gnu-indent gnu-getopt
         brew install Caskroom/cask/iterm2
         brew install Caskroom/cask/alfred
     else
