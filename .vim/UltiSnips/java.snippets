@@ -1,0 +1,664 @@
+global !p
+def pathToPackage(p, f):
+    index = p.find('java/')
+    count = 5
+    if index == -1:
+        index = p.find('src/')
+        count = 4
+    end = p.find(f) - 1
+    return p[index+count:end].replace('/','.')
+
+import re
+
+def classHeader(fn):
+	return 'package ' + pathToPackage(path, fn) + '\n\npublic class ' + fn[0:fn.find('.')] + ' {'
+
+def classFooter(fn):
+	return '}'
+
+def lowerDash(f):
+    f = re.sub(r'm?([A-Z])', lambda pat: "_" + pat.group(1).lower(), f)
+    if (f[0] == '_'):
+        f = f[1:]
+    return f
+
+def idFromName(f):
+    f = f[0:f.find('.')]
+    f = re.sub(r'([A-Z])', lambda pat: "_" + pat.group(1).lower(), f)
+
+    return f[1:]
+
+def upperFirst(name):
+    return name[0:1].upper() + name[1:]
+
+member = r'(\s*)(?:private|public)\s+([\w\[\]]+)\s+(\w+)(?:\s+=.*)?;'
+
+def psf(pat):
+    return pat.group(1) + "public static final String " + lowerDash(pat.group(3)).upper() + " = \"" + lowerDash(pat.group(3)) + "\";"
+
+def contentValue(pat):
+    tab = pat.group(1) + pat.group(1).strip('\n')
+    return tab + "values.put(" + lowerDash(pat.group(3)).upper() + ", " + pat.group(3) + ");"
+
+def column(pat):
+    tab = pat.group(1) + pat.group(1).strip('\n') + pat.group(1).strip('\n')+ pat.group(1).strip('\n')
+
+    t = pat.group(2)
+    if (t in ['int', 'Integer']):
+        t = 'Integer'
+    return tab + ".add" + upperFirst(t) + "Column(" + lowerDash(pat.group(3)).upper() + ")"
+
+def getterSetter(pat):
+    s = '''
+    public {2} get{0}() {{
+        return {1};     
+    }}
+
+    public void set{0}({2} {3}) {{
+        {1} = {3};
+    }}
+    '''
+
+    var = pat.group(3)
+    name = var
+    hasM = re.compile('m[A-Z]')
+    useThis = True
+    if hasM.match(var) is not None:
+        useThis = False
+        name = name[1:2].upper() + name[2:]
+    if useThis:
+        return s.format(name[0:1].upper() + name[1:], "this."+name, pat.group(2), name);
+	
+    return s.format(name, var, pat.group(2), "a"+name);
+
+def getCursorType(val):
+    if (val in ['int', 'Integer']):
+        return 'Int'
+    else:
+        return val[0:1].upper() + val[1:];
+
+def columnFromCursor(pat):
+    tab = ('\n        ')
+    s = " else if (aName.equals(" + lowerDash(pat.group(3)).upper() + ")) {"
+    s += tab + "    " + pat.group(3) + " = aCursor.get" + getCursorType(pat.group(2)) + "(index);"
+    s += tab + "}"
+
+    return s;
+def columnFromCursorSwitch(pat):
+    tab = pat.group(1) + pat.group(1).strip('\n') + pat.group(1).strip('\n')
+    if tab == '':
+        tab = ('\n            ')
+        s = "case " + lowerDash(pat.group(3)).upper() + ":"
+    else:
+        s = tab + "case " + lowerDash(pat.group(3)).upper() + ":"
+    s += tab + "    " + pat.group(3) + " = aCursor.get" + getCursorType(pat.group(2)) + "(index);"
+    s += tab + "    " + "break;"
+
+    return s;
+
+def memberTo(f, mod):
+    f = re.sub(member, mod, f, flags=re.M)
+    return f
+
+endglobal
+
+snippet b "Builder"
+public $1Builder $2(${3:String} $2) {
+	this.$2 = $2;
+	return this;
+}
+
+$0
+endsnippet
+
+priority 1
+snippet pack "Full Package" b
+package `!p snip.rv = pathToPackage(path, fn)`;
+endsnippet
+
+priority -1
+snippet pack "Import Package" 
+`!p snip.rv = pathToPackage(path, fn)`.$1;
+endsnippet
+
+snippet val "Content Value insertion" b
+${1:values}.put(${2:ID}, m${2/(.)(.*)/\U$1\E\L$2\E/g});
+endsnippet
+
+snippet log "Android Log" !b
+android.util.Log.${1:d}("`!p snip.rv=fn[0:fn.find('.')]`", $2);
+endsnippet
+
+snippet psf "Public Static Final" !b
+public static final ${1:String} ${2:NAME} = ${2/(.*)/"\L$1\E"/g};
+endsnippet
+
+snippet fv "Find View" !b
+m$1 = ($2) findViewById(R.id.${1/(.*)/\L$1\E/g});
+endsnippet
+
+snippet oAR "On Activity Results" b
+@Override 
+protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    // Check which request we're responding to 
+    if (resultCode == RESULT_OK) {
+        // Make sure the request was successful 
+        if (requestCode == $1) {
+			$0
+        } 
+    } 
+} 
+endsnippet
+
+snippet app "Android Application" b
+package `!p snip.rv = pathToPackage(path, fn)`;
+
+import android.app.Application;
+import android.content.Context;
+import android.os.Build;
+
+public class `!p snip.rv=fn[0:fn.find('.')]` extends Application {
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        $0
+    }
+}
+endsnippet
+
+snippet act "Android Activity" b!
+package `!p snip.rv = pathToPackage(path, fn)`;
+
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.view.*;
+
+public class `!p snip.rv=fn[0:fn.find('.')]` extends AppCompatActivity {
+
+    public static final String TAG = `!p snip.rv=fn[0:fn.find('.')]`.class.getSimpleName();
+
+    @Override
+    public void onCreate(Bundle savedState) {
+        super.onCreate(savedState);
+        setContentView(R.layout.${1:`!p snip.rv=idFromName(fn)`});
+
+        $0
+    }
+}
+endsnippet
+
+snippet frag "Fragment" b
+package `!p snip.rv = pathToPackage(path, fn)`;
+
+import android.app.*;
+import android.content.*;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.widget.*;
+import android.view.*;
+
+public class ${1:`!p snip.rv=fn[0:fn.find('.')]`} extends ${2:Fragment} {
+
+    public static $1 newInstance($3) {
+        $1 frag = new $1();
+
+        Bundle args = new Bundle();
+        frag.setArguments(args);
+
+        return frag;
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater aInflater, ViewGroup aContainer, Bundle aSavedState) {
+        super.onCreateView(aInflater, aContainer, aSavedState);
+        View result = aInflater.inflate(R.layout.${4:`!p snip.rv=idFromName(fn)`}, aContainer, false);
+        ButterKnife.bind(this, result);
+
+        $0
+
+        return result;
+    }
+
+    @Override 
+    public void onDestroyView() {
+        super.onDestroyView();
+        ButterKnife.unbind(this);
+    }
+}
+endsnippet
+
+snippet frag "Dialog Fragment" b
+package `!p snip.rv = pathToPackage(path, fn)`;
+
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.*;
+import android.os.Bundle;
+import android.support.v4.app.*;
+import android.widget.*;
+import android.view.*;
+
+import `!p snip.rv = pathToPackage(path, fn)`.R;
+
+public class ${1:`!p snip.rv=fn[0:fn.find('.')]`} extends Fragment {
+
+    public static $1 newInstance($2) {
+        $1 frag = new $1();
+
+        Bundle args = new Bundle();
+        frag.setArguments(args);
+
+        return frag;
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater aInflater, ViewGroup aContainer, Bundle aSavedState) {
+        super.onCreateView(aInflater, aContainer, aSavedState);
+        View result = aInflater.inflate(R.layout.${3:`!p snip.rv=idFromName(fn)`}, null);
+
+        $0
+
+        return result;
+    }
+
+    @Override
+    public Dialog onCreateDialog(Bundle aSavedState) {
+        return new AlertDialog.Builder(getActivity())
+            ${4:.setView(getView())}
+            $5.setPositiveButton(R.string.add, mListener)
+            .setNegativeButton(R.string.cancel_btn, mListener)
+            .create();
+    }
+
+    private DialogInterface.OnClickListener mListener = new DialogInterface.OnClickListener() {
+        public void onClick(DialogInterface aDialog, int aWhich) {
+            switch (aWhich) {
+                case Dialog.BUTTON_POSITIVE:$6
+                case Dialog.BUTTON_NEGATIVE:$7
+                default:
+                    aDialog.dismiss();
+                    break;
+            }
+        }
+    };
+}
+endsnippet
+
+snippet lc "Loader.Callbacks" !b
+public static class ${1:CustomCallbacks} implements Loader.Callbacks{
+    public Loader<${2:Cursor}> onCreateLoader(int id, Bundle args) {
+        return new ${3:$2}Loader(getActivity(), ${4:uri}, ${5:projection},
+            ${6:selection}, ${7:args}, ${8:order});
+    }
+
+    public void onLoadFinished(Loader<$2> loader, $2 data) {
+        $9
+    }
+
+    public void onLoaderReset(Loader<$2> loader) {
+        $10
+    }
+}
+endsnippet
+
+snippet loader "Custom Async Task Loader" !b
+
+public class ${1:`!p snip.rv=fn[0:fn.find('.')]`} extends AsyncTaskLoader<$2> {
+    final ContentObserver mObserver;
+    Context mContext;
+    int mId;
+    
+    public $1(final Context aContext, final int aId) {
+        super(aContext);
+
+        mContext = aContext;
+        mId = aId;
+
+        mObserver = new ContentObserver(new Handler()) {
+            public void onChange(boolean aBool) {
+                forceLoad();
+            }
+        };
+    }
+
+    @Override
+    public void onStartLoading() {
+        forceLoad();
+    }
+
+    public $2 loadInBackground() {
+        Cursor c = mContext.getContentResolver().query(CONTENT_URI, null, 
+            null, null, null);
+
+        mContext.getContentResolver().registerContentObserver(CONTENT_URI, true, mObserver);
+
+        $2 result = new $2();
+
+        if (c.moveToNext()) {
+            $3
+        }
+
+        c.close();
+
+        return result; 
+    }
+}
+endsnippet
+snippet cls "Generic class" b
+package `!p snip.rv = pathToPackage(path, fn)`;
+
+public class ${1:`!p snip.rv=fn[0:fn.find('.')]`} {
+
+    $2
+    `!p snip.rv=memberTo(t[2], getterSetter)` 
+
+}
+endsnippet
+
+snippet inter "Generic interface" b
+package `!p snip.rv = pathToPackage(path, fn)`;
+
+public interface ${1:`!p snip.rv=fn[0:fn.find('.')]`} {
+    $0
+}
+endsnippet
+
+snippet receiver "Broadcast Receiver" b
+package `!p snip.rv = pathToPackage(path, fn)`;
+
+import android.content.Context;
+import android.content.Intent;
+
+public class ${1:`!p snip.rv=fn[0:fn.find('.')]`} extends BroadcastReceiver {
+
+	@Override 
+    public void onReceive(Context context, Intent intent) { 
+		$0
+    } 
+
+}
+endsnippet
+
+snippet model "Description" !b
+    public static ${1:`!p snip.rv=fn[0:fn.find('.')]`} fromCursor(Cursor aCursor) {
+        $1 result = null;
+    
+        if (${2}Provider.isValidCursor(aCursor)) {
+            result = new Survey();
+        
+            int index = 0;
+            for(String name : aCursor.getColumnNames()) {
+                result.setByCursorColumn(aCursor, name, index);
+                ++index;
+            }
+        }
+    
+        return result;
+    }
+
+    protected void setByCursorColumn(final Cursor aCursor, final String aName, final int index) {
+        if (aName.equals(ID)) {
+            mId = aCursor.getInt(index);
+        }$3
+    }
+
+    public ContentValues getContentValues() {
+        ContentValues values = new ContentValues();
+
+	$0
+
+        return values;
+    }
+endsnippet
+
+snippet gs "Getters & Setters Vokal Style" !b
+public void set${1:Id}(${2:int} a$1) {
+    m$1 = a$1;
+}
+
+public $2 get$1() {
+    return m$1;
+}
+endsnippet
+
+snippet watcher "TextWatcher" w
+new TextWatcher() {
+    public void beforeTextChanged(CharSequence aString, int aStart, int aCount, int aAfter) {$1};
+    public void onTextChanged(CharSequence aString, int aStart, int aBefore, int aCount) {$2};
+    public void afterTextChanged(Editable aString) {$3};
+
+}$0
+endsnippet
+
+snippet watcher "TextWatcher" b!
+TextWatcher ${1:watcher} = new TextWatcher() {
+    public void beforeTextChanged(CharSequence aString, int aStart, int aCount, int aAfter) {$2};
+    public void onTextChanged(CharSequence aString, int aStart, int aBefore, int aCount) {$3};
+    public void afterTextChanged(Editable aString) {$4};
+
+};$0
+endsnippet
+
+snippet adapter "CursorAdapter" b
+package `!p snip.rv = pathToPackage(path, fn)`;
+
+import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
+import android.database.CursorWrapper;
+import android.graphics.drawable.AnimationDrawable;
+import android.os.Build;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.widget.CursorAdapter;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.*;
+import android.widget.*;
+
+import `!p snip.rv = pathToPackage(path, fn)`.R;
+
+public class ${1:`!p snip.rv=fn[0:fn.find('.')]`} extends CursorAdapter
+    implements AdapterView.OnItemClickListener, AbsListView.OnScrollListener {
+
+    private LayoutInflater mInflater;
+
+    public $1(Context aContext, Cursor aCursor)
+    {
+        super(aContext, aCursor, false);
+    }
+
+    @Override
+    public View newView(Context aContext, Cursor aCursor, ViewGroup aParent) {
+        ViewHolder viewHolder = new ViewHolder();
+        View view = mInflater.inflate(layout, null);
+        
+        ${2:viewHolder.title = (TextView) view.findViewById(R.id.title);}
+
+        view.setTag(viewHolder);
+        return view;
+    }
+
+    @Override
+    public void bindView(View aView, Context aContext, Cursor aCursor) {
+        ViewHolder viewHolder = (ViewHolder) aView.getTag();
+        $3
+    }
+
+    public void onItemClick(AdapterView aListView, View aView, int aPosition, long aId) {
+        $1 adapter = ($1) aListView.getAdapter();
+        CursorWrapper cursor = (CursorWrapper) adapter.getItem(aPosition);
+
+        if (cursor.moveToPosition(aPosition)) {
+            $5
+        }
+    }
+
+    private static class ViewHolder {
+        ${4:TextView title};
+    }
+}
+endsnippet
+
+snippet parcel "Parcelable" !b
+private ${1:`!p snip.rv=fn[0:fn.find('.')]`}(Parcel aIn) {
+    $2
+}
+
+public static final Parcelable.Creator<$1> CREATOR = new Parcelable.Creator<$1>() {
+    public $1 createFromParcel(Parcel aIn) {
+        return new $1(aIn);
+    }
+
+    public $1[] newArray(int aSize) {
+        return new $1[aSize];
+    }
+};
+
+public int describeContents() {
+    return ${3:0};
+}
+
+public void writeToParcel(Parcel aOut, int aFlags) {
+    $4
+}
+$0
+endsnippet
+
+snippet dm "DataModel" !b
+package `!p snip.rv = pathToPackage(path, fn)`;
+
+import com.vokal.db.AbstractDataModel;
+
+public class `!p snip.rv=fn[0:fn.find('.')]` implements AbstractDataModel {
+
+    `!p snip.rv=memberTo(t[2], psf)` 
+
+    $2
+
+    public void populateContentValues(ContentValues aValues) {
+        super.populateContentValues(aValues);
+
+        `!p snip.rv=memberTo(t[2], contentValue)` 
+
+        return values;
+    }
+
+    public static final SQLiteTable.TableCreator TABLE_CREATOR = new SQLiteTable.TableCreator() {
+
+        @Override
+        public SQLiteTable buildTableSchema(SQLiteTable.Builder aBuilder) {
+            aBuilder.addIntegerColumn(_ID).primaryKey()
+                `!p snip.rv=memberTo(t[2], column)`
+                $3;
+
+            return aBuilder.build();
+        }
+
+        @Override
+        public SQLiteTable updateTableSchema(SQLiteTable.Updater aUpdater, int aOldVersion) {
+            return null;  // no upgrades yet...
+        }
+    };
+}
+endsnippet
+
+snippet module "Dagger Module" !b
+package `!p snip.rv = pathToPackage(path, fn)`;
+
+import dagger.*;
+
+@Module(
+    complete=false,
+    injects={
+        MyActivity.class,
+    },
+)
+public class `!p snip.rv=fn[0:fn.find('.')]` {
+    $0
+}
+endsnippet
+
+snippet alc "Activity Lifecycle Callbacks" !b
+public static class $1LifecycleCallbacks implements Application.ActivityLifecycleCallbacks {
+
+	@Override
+	public void onActivityCreated(Activity activity, Bundle bundle) {$2}
+
+	@Override
+	public void onActivityStarted(Activity activity) {$3}
+
+	@Override
+	public void onActivityResumed(Activity activity) {$4}
+
+	@Override
+	public void onActivityPaused(Activity activity) {$5}
+
+	@Override
+	public void onActivityStopped(final Activity activity) {$6}
+
+	@Override
+	public void onActivitySaveInstanceState(Activity activity, Bundle bundle) {$7}
+
+	@Override
+	public void onActivityDestroyed(final Activity activity) {$8}
+}
+endsnippet
+
+snippet singleton "Singleton Object" !b 
+package `!p snip.rv = pathToPackage(path, fn)`;
+
+public class ${1:`!p snip.rv=fn[0:fn.find('.')]`} {
+	private static $1 sInstance = null;
+
+    private $1() { }
+
+	public static $1 getInstance($2) {
+		if (sInstance == null) {
+			sInstance = new $1();
+		}
+
+		return sInstance;
+	}
+
+	$0
+}
+endsnippet
+
+snippet test "Activity Test" !b 
+package `!p snip.rv = pathToPackage(path, fn)`;
+
+import android.support.test.runner.AndroidJUnit4;
+import android.support.test.runner.AndroidJUnitRunner;
+import android.support.test.rule.ActivityTestRule;
+
+import org.junit.*;
+import org.junit.runner.RunWith;
+
+import android.support.test.espresso.Espresso.*;
+import android.support.test.espresso.action.ViewActions.*;
+import android.support.test.espresso.assertion.ViewAssertions.*;
+import android.support.test.espresso.matcher.ViewMatchers.*;
+
+@RunWith(AndroidJUnit4.class)
+public class ${1:`!p snip.rv=fn[0:fn.find('.')]`} {
+
+	@Rule
+    public ActivityTestRule<${2:`!p snip.rv=re.sub(r'[Tt]ests?', '', fn[0:fn.find('.')])`}> mActivityRule = new ActivityTestRule<>($2.class, false, true);
+
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+    }
+
+    @Test
+    public void test$0() {
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+    }
+}
+endsnippet
