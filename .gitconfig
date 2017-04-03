@@ -1,0 +1,38 @@
+# This is Git's per-user configuration file.
+[user]
+# Please adapt and uncomment the following lines:
+#	name = William Best
+#	email = wbest@enova.com
+[user]
+	email = wbest@enova.com
+[credential]
+	helper = osxkeychain
+[alias]
+    st = status
+    ci = commit
+    br = branch
+    co = checkout
+    df = diff
+    dc = diff --cached
+    lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
+    lk = log --graph --topo-order --abbrev-commit --date=short --decorate --all --boundary --pretty=format:'%Cgreen%ad %Cred%h%Creset -%C(yellow)%d%Creset %s %Cblue[%cn]%Creset %Cblue%G?%Creset'
+    who = shortlog -s --
+    whorank = shortlog --summary --numbered --no-merges
+	graph = log --graph --decorate --oneline
+    graphviz = "!f() { echo 'digraph git {' ; git log --pretty='format:  %h -> { %p }' \"$@\" | sed 's/[0-9a-f][0-9a-f]*/\"&\"/g' ; echo '}'; }; f"
+	unstage = reset HEAD --
+    feature = flow feature
+    stat = diff --stat --color
+	stash-rename = "!_() { rev=$(git rev-parse $1) && git stash drop $1 || exit 1 ; git stash store -m \"$2\" $rev; }; _"
+    chlogm = !sh -c 'git log $1...$2  --pretty=format:\" - %s [view commit](http://git.enova.com/$3/$4/commit/%H) \"' -
+[hub]
+	host = git.enova.com
+[github]
+	user = wmbest2
+[color]
+	branch = auto
+	diff = auto
+	interactive = auto
+	status = auto
+[core]
+	editor = vim
