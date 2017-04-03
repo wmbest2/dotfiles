@@ -1,3 +1,5 @@
+# Python Functions {{{1 #
+
 global !p
 def pathToPackage(p, f):
     index = p.find('java/')
@@ -102,6 +104,10 @@ def memberTo(f, mod):
 
 endglobal
 
+# 1}}} #
+
+# Java Basics {{{1 #
+
 snippet b "Builder"
 public $1Builder $2(${3:String} $2) {
 	this.$2 = $2;
@@ -112,6 +118,7 @@ $0
 endsnippet
 
 priority 1
+
 snippet pack "Full Package" b
 package `!p snip.rv = pathToPackage(path, fn)`;
 endsnippet
@@ -125,12 +132,36 @@ snippet val "Content Value insertion" b
 ${1:values}.put(${2:ID}, m${2/(.)(.*)/\U$1\E\L$2\E/g});
 endsnippet
 
-snippet log "Android Log" !b
-android.util.Log.${1:d}("`!p snip.rv=fn[0:fn.find('.')]`", $2);
-endsnippet
-
 snippet psf "Public Static Final" !b
 public static final ${1:String} ${2:NAME} = ${2/(.*)/"\L$1\E"/g};
+endsnippet
+
+snippet singleton "Singleton Object" !b 
+package `!p snip.rv = pathToPackage(path, fn)`;
+
+public class ${1:`!p snip.rv=fn[0:fn.find('.')]`} {
+	private static $1 sInstance = null;
+
+    private $1() { }
+
+	public static $1 getInstance($2) {
+		if (sInstance == null) {
+			sInstance = new $1();
+		}
+
+		return sInstance;
+	}
+
+	$0
+}
+endsnippet
+
+# 1}}} #
+
+# Android Helpers {{{1 #
+
+snippet log "Android Log" !b
+Timber.${1:d}($2);
 endsnippet
 
 snippet fv "Find View" !b
@@ -346,24 +377,6 @@ public class ${1:`!p snip.rv=fn[0:fn.find('.')]`} extends AsyncTaskLoader<$2> {
     }
 }
 endsnippet
-snippet cls "Generic class" b
-package `!p snip.rv = pathToPackage(path, fn)`;
-
-public class ${1:`!p snip.rv=fn[0:fn.find('.')]`} {
-
-    $2
-    `!p snip.rv=memberTo(t[2], getterSetter)` 
-
-}
-endsnippet
-
-snippet inter "Generic interface" b
-package `!p snip.rv = pathToPackage(path, fn)`;
-
-public interface ${1:`!p snip.rv=fn[0:fn.find('.')]`} {
-    $0
-}
-endsnippet
 
 snippet receiver "Broadcast Receiver" b
 package `!p snip.rv = pathToPackage(path, fn)`;
@@ -378,48 +391,6 @@ public class ${1:`!p snip.rv=fn[0:fn.find('.')]`} extends BroadcastReceiver {
 		$0
     } 
 
-}
-endsnippet
-
-snippet model "Description" !b
-    public static ${1:`!p snip.rv=fn[0:fn.find('.')]`} fromCursor(Cursor aCursor) {
-        $1 result = null;
-    
-        if (${2}Provider.isValidCursor(aCursor)) {
-            result = new Survey();
-        
-            int index = 0;
-            for(String name : aCursor.getColumnNames()) {
-                result.setByCursorColumn(aCursor, name, index);
-                ++index;
-            }
-        }
-    
-        return result;
-    }
-
-    protected void setByCursorColumn(final Cursor aCursor, final String aName, final int index) {
-        if (aName.equals(ID)) {
-            mId = aCursor.getInt(index);
-        }$3
-    }
-
-    public ContentValues getContentValues() {
-        ContentValues values = new ContentValues();
-
-	$0
-
-        return values;
-    }
-endsnippet
-
-snippet gs "Getters & Setters Vokal Style" !b
-public void set${1:Id}(${2:int} a$1) {
-    m$1 = a$1;
-}
-
-public $2 get$1() {
-    return m$1;
 }
 endsnippet
 
@@ -526,60 +497,6 @@ public void writeToParcel(Parcel aOut, int aFlags) {
 $0
 endsnippet
 
-snippet dm "DataModel" !b
-package `!p snip.rv = pathToPackage(path, fn)`;
-
-import com.vokal.db.AbstractDataModel;
-
-public class `!p snip.rv=fn[0:fn.find('.')]` implements AbstractDataModel {
-
-    `!p snip.rv=memberTo(t[2], psf)` 
-
-    $2
-
-    public void populateContentValues(ContentValues aValues) {
-        super.populateContentValues(aValues);
-
-        `!p snip.rv=memberTo(t[2], contentValue)` 
-
-        return values;
-    }
-
-    public static final SQLiteTable.TableCreator TABLE_CREATOR = new SQLiteTable.TableCreator() {
-
-        @Override
-        public SQLiteTable buildTableSchema(SQLiteTable.Builder aBuilder) {
-            aBuilder.addIntegerColumn(_ID).primaryKey()
-                `!p snip.rv=memberTo(t[2], column)`
-                $3;
-
-            return aBuilder.build();
-        }
-
-        @Override
-        public SQLiteTable updateTableSchema(SQLiteTable.Updater aUpdater, int aOldVersion) {
-            return null;  // no upgrades yet...
-        }
-    };
-}
-endsnippet
-
-snippet module "Dagger Module" !b
-package `!p snip.rv = pathToPackage(path, fn)`;
-
-import dagger.*;
-
-@Module(
-    complete=false,
-    injects={
-        MyActivity.class,
-    },
-)
-public class `!p snip.rv=fn[0:fn.find('.')]` {
-    $0
-}
-endsnippet
-
 snippet alc "Activity Lifecycle Callbacks" !b
 public static class $1LifecycleCallbacks implements Application.ActivityLifecycleCallbacks {
 
@@ -606,27 +523,153 @@ public static class $1LifecycleCallbacks implements Application.ActivityLifecycl
 }
 endsnippet
 
-snippet singleton "Singleton Object" !b 
+snippet view "Composite View" b
 package `!p snip.rv = pathToPackage(path, fn)`;
 
-public class ${1:`!p snip.rv=fn[0:fn.find('.')]`} {
-	private static $1 sInstance = null;
+import android.content.Context;
+import android.content.res.AttributeSet;
+import android.support.v4.content.ContextCompat;
+import android.view.*;
+import android.widget.${1:LinearLayout};
 
-    private $1() { }
+public class $2 extends $1 {
 
-	public static $1 getInstance($2) {
-		if (sInstance == null) {
-			sInstance = new $1();
-		}
+    public $2(Context context) {
+        super(context);
+        init(context, null, 0);
+    }
 
-		return sInstance;
+    public $2(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        init(context, attrs, 0);
+    }
+
+    public $2(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        init(context, attrs, defStyleAttr);
+    }
+
+    private void init(Context context, AttributeSet attrs, int defStyleAttr) {
+
+        setOrientation(LinearLayout.HORIZONTAL);
+        setGravity(Gravity.CENTER_VERTICAL);
+
+        LayoutInflater inflater = LayoutInflater.from(context);
+        inflater.inflate(R.layout.view_$3, this, true);
+
+        if (attrs == null) {
+            TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.$2, defStyleAttr, 0);
+            // get resources
+			$0
+            a.recycle();
+        }
+    }
+}
+endsnippet
+
+# 1}}} #
+
+# Dagger Modules {{{1 #
+
+snippet module "Dagger Module" !b
+package `!p snip.rv = pathToPackage(path, fn)`;
+
+import dagger.*;
+
+@Module(complete=false)
+public class `!p snip.rv=fn[0:fn.find('.')]` {
+    $0
+}
+endsnippet
+
+snippet comp "Presenter Component"
+package `!p snip.rv = pathToPackage(path, fn)`;
+
+import dagger.BindsInstance;
+import dagger.Component;
+
+import com.enova.$1.ApplicationComponent;
+import com.enova.$1.di.PresenterScope;
+
+@PresenterScope
+@Component(dependencies = ApplicationComponent.class)
+public interface `!p snip.rv=fn[0:fn.find('.')]` {
+    void inject($2Activity activity);
+
+    @Component.Builder
+    interface Builder {
+        Builder applicationComponent(ApplicationComponent comp);
+        @BindsInstance Builder $2View($2Contract.View $2View);
+        LoginComponent build();
+    }
+}
+endsnippet
+
+snippet comp "Application Component" b
+
+endsnippet
+
+# 1}}} #
+
+# MVP Helpers {{{ #
+
+snippet contract "MVP Contract" b
+package `!p snip.rv = pathToPackage(path, fn)`;
+
+import com.enova.$1.base.BasePresenter;
+
+public interface ${2:`!p snip.rv=fn[0:fn.find('.')]`} {
+
+	public interface View {
+		$3
 	}
+
+	public interface Presenter extends BasePresenter {
+		$0
+	}
+}
+endsnippet
+
+snippet pre "MVP Presenter" b
+package `!p snip.rv = pathToPackage(path, fn)`;
+
+import timber.log.Timber;
+
+import javax.inject.Inject;
+
+import com.enova.$1.di.PresenterScope;
+
+import com.enova.analytics.Analytics;
+
+import static com.enova.validation.Validation.*;
+
+@PresenterScope
+public class ${2:`!p snip.rv=fn[0:fn.find('.')]`} implements $3Contract.Presenter {
+
+    $3Contract.View  view;
+
+    @Inject
+    public $2($3Contract.View view, Analytics analytics) {
+        this.view = view;
+    }
+
+    @Override
+    public void start() {
+        analytics.trackScreen("${4:$3 Screen}");
+    }
+
+    @Override
+    public void stop() {
+
+    }
 
 	$0
 }
 endsnippet
 
-snippet test "Activity Test" !b 
+# }}} MVP Helpers #
+
+snippet jtc "Junit Test Case" !b 
 package `!p snip.rv = pathToPackage(path, fn)`;
 
 import android.support.test.runner.AndroidJUnit4;
