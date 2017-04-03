@@ -200,9 +200,10 @@ set wildignore-=\docs
 
 let g:gofmt_command = "/usr/local/go/bin/gofmt"
 
-let g:syntastic_java_javac_classpath=$ANDROID_HOME+"/platforms/android-25/*.jar"
+let g:syntastic_disabled_filetypes=['java', 'cucumber']
+let g:syntastic_java_checkers=['']
 
-let g:UltiSnipsSnippetDirectories = ['~/.vim/UltiSnips', 'UltiSnips']
+let g:UltiSnipsSnippetDirectories = ['~/.vim/UltiSnips', '~/.vim/bundle/vim-snippets/UltiSnips', 'UltiSnips']
 
 " }}}
 " Filetype Specific Settings {{{ 

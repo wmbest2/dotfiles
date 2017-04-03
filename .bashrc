@@ -17,6 +17,7 @@ ifsource() {
 ifsource ~/.env
 ifsource ~/.bash_aliases
 ifsource ~/.nerdtree_aliases
+ifsource ~/.functions
 ifsource $(brew --prefix)/etc/bash_completion
 
 
