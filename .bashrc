@@ -128,8 +128,8 @@ if ! shopt -oq posix; then
   fi
 fi
 
-source /usr/local/share/chruby/chruby.sh
-source /usr/local/share/chruby/auto.sh
+source /usr/local/share/chruby/chruby.sh 2> /dev/null
+source /usr/local/share/chruby/auto.sh 2> /dev/null
 
 [ -d "~/Work/8b/bin" ] && export PATH="~/Work/8b/bin:$PATH"
 
@@ -137,14 +137,17 @@ PYTHON_ROOT=~/Library/Python/2.7/lib/python/site-packages
 export POWERLINE_HOME=$PYTHON_ROOT/powerline
 export PATH=$HOME/Library/Python/2.7/bin:$PATH
 
-powerline-daemon -q
+powerline-daemon -k 1> /dev/null
 POWERLINE_BASH_CONTINUATION=1
 POWERLINE_BASH_SELECT=1
 POWERLINE_CONFIG_COMMAND=powerline-config
 . $POWERLINE_HOME/bindings/bash/powerline.sh
+powerline-daemon -q
 
 # added by travis gem
 ifsource ~/.travis/travis.sh
 
 # Add Hub as git alternative
 eval "$(hub alias -s)"
+
+export PATH="$HOME/.fastlane/bin:$PATH"

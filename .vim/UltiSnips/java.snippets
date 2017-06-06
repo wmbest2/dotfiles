@@ -13,22 +13,26 @@ def pathToPackage(p, f):
 import re
 
 def classHeader(fn):
-	return 'package ' + pathToPackage(path, fn) + '\n\npublic class ' + fn[0:fn.find('.')] + ' {'
+    return 'package ' + pathToPackage(path, fn) + '\n\npublic class ' + fn[0:fn.find('.')] + ' {'
 
 def classFooter(fn):
-	return '}'
+    return '}'
 
-def lowerDash(f):
-    f = re.sub(r'm?([A-Z])', lambda pat: "_" + pat.group(1).lower(), f)
+def snakecase(f, pattern=r'([A-Z])'):
+    f = re.sub(pattern, lambda pat: "_" + pat.group(1).lower(), f)
     if (f[0] == '_'):
         f = f[1:]
     return f
 
 def idFromName(f):
     f = f[0:f.find('.')]
-    f = re.sub(r'([A-Z])', lambda pat: "_" + pat.group(1).lower(), f)
+    f = snakecase(f)
+    if f.endswith("_activity"):
+        f = "activity_" + f.replace("_activity", "")
+    elif f.endswith("_fragment"):
+        f = "frag_" + f.replace("_fragment", "")
 
-    return f[1:]
+    return f
 
 def upperFirst(name):
     return name[0:1].upper() + name[1:]
@@ -36,19 +40,7 @@ def upperFirst(name):
 member = r'(\s*)(?:private|public)\s+([\w\[\]]+)\s+(\w+)(?:\s+=.*)?;'
 
 def psf(pat):
-    return pat.group(1) + "public static final String " + lowerDash(pat.group(3)).upper() + " = \"" + lowerDash(pat.group(3)) + "\";"
-
-def contentValue(pat):
-    tab = pat.group(1) + pat.group(1).strip('\n')
-    return tab + "values.put(" + lowerDash(pat.group(3)).upper() + ", " + pat.group(3) + ");"
-
-def column(pat):
-    tab = pat.group(1) + pat.group(1).strip('\n') + pat.group(1).strip('\n')+ pat.group(1).strip('\n')
-
-    t = pat.group(2)
-    if (t in ['int', 'Integer']):
-        t = 'Integer'
-    return tab + ".add" + upperFirst(t) + "Column(" + lowerDash(pat.group(3)).upper() + ")"
+    return pat.group(1) + "public static final String " + snakecase(pat.group(3)).upper() + " = \"" + snakecase(pat.group(3)) + "\";"
 
 def getterSetter(pat):
     s = '''
@@ -70,33 +62,8 @@ def getterSetter(pat):
         name = name[1:2].upper() + name[2:]
     if useThis:
         return s.format(name[0:1].upper() + name[1:], "this."+name, pat.group(2), name);
-	
+    
     return s.format(name, var, pat.group(2), "a"+name);
-
-def getCursorType(val):
-    if (val in ['int', 'Integer']):
-        return 'Int'
-    else:
-        return val[0:1].upper() + val[1:];
-
-def columnFromCursor(pat):
-    tab = ('\n        ')
-    s = " else if (aName.equals(" + lowerDash(pat.group(3)).upper() + ")) {"
-    s += tab + "    " + pat.group(3) + " = aCursor.get" + getCursorType(pat.group(2)) + "(index);"
-    s += tab + "}"
-
-    return s;
-def columnFromCursorSwitch(pat):
-    tab = pat.group(1) + pat.group(1).strip('\n') + pat.group(1).strip('\n')
-    if tab == '':
-        tab = ('\n            ')
-        s = "case " + lowerDash(pat.group(3)).upper() + ":"
-    else:
-        s = tab + "case " + lowerDash(pat.group(3)).upper() + ":"
-    s += tab + "    " + pat.group(3) + " = aCursor.get" + getCursorType(pat.group(2)) + "(index);"
-    s += tab + "    " + "break;"
-
-    return s;
 
 def memberTo(f, mod):
     f = re.sub(member, mod, f, flags=re.M)
@@ -110,8 +77,8 @@ endglobal
 
 snippet b "Builder"
 public $1Builder $2(${3:String} $2) {
-	this.$2 = $2;
-	return this;
+    this.$2 = $2;
+    return this;
 }
 
 $0
@@ -140,19 +107,19 @@ snippet singleton "Singleton Object" !b
 package `!p snip.rv = pathToPackage(path, fn)`;
 
 public class ${1:`!p snip.rv=fn[0:fn.find('.')]`} {
-	private static $1 sInstance = null;
+    private static $1 sInstance = null;
 
     private $1() { }
 
-	public static $1 getInstance($2) {
-		if (sInstance == null) {
-			sInstance = new $1();
-		}
+    public static $1 getInstance($2) {
+        if (sInstance == null) {
+            sInstance = new $1();
+        }
 
-		return sInstance;
-	}
+        return sInstance;
+    }
 
-	$0
+    $0
 }
 endsnippet
 
@@ -175,7 +142,7 @@ protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     if (resultCode == RESULT_OK) {
         // Make sure the request was successful 
         if (requestCode == $1) {
-			$0
+            $0
         } 
     } 
 } 
@@ -206,14 +173,14 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.*;
 
-public class `!p snip.rv=fn[0:fn.find('.')]` extends AppCompatActivity {
+import timber.log.Timber;
 
-    public static final String TAG = `!p snip.rv=fn[0:fn.find('.')]`.class.getSimpleName();
+public class `!p snip.rv=fn[0:fn.find('.')]` extends ${1:AppCompatActivity} {
 
     @Override
     public void onCreate(Bundle savedState) {
         super.onCreate(savedState);
-        setContentView(R.layout.${1:`!p snip.rv=idFromName(fn)`});
+        setContentView(R.layout.${2:`!p snip.rv=idFromName(fn)`});
 
         $0
     }
@@ -386,9 +353,9 @@ import android.content.Intent;
 
 public class ${1:`!p snip.rv=fn[0:fn.find('.')]`} extends BroadcastReceiver {
 
-	@Override 
+    @Override 
     public void onReceive(Context context, Intent intent) { 
-		$0
+        $0
     } 
 
 }
@@ -500,26 +467,26 @@ endsnippet
 snippet alc "Activity Lifecycle Callbacks" !b
 public static class $1LifecycleCallbacks implements Application.ActivityLifecycleCallbacks {
 
-	@Override
-	public void onActivityCreated(Activity activity, Bundle bundle) {$2}
+    @Override
+    public void onActivityCreated(Activity activity, Bundle bundle) {$2}
 
-	@Override
-	public void onActivityStarted(Activity activity) {$3}
+    @Override
+    public void onActivityStarted(Activity activity) {$3}
 
-	@Override
-	public void onActivityResumed(Activity activity) {$4}
+    @Override
+    public void onActivityResumed(Activity activity) {$4}
 
-	@Override
-	public void onActivityPaused(Activity activity) {$5}
+    @Override
+    public void onActivityPaused(Activity activity) {$5}
 
-	@Override
-	public void onActivityStopped(final Activity activity) {$6}
+    @Override
+    public void onActivityStopped(final Activity activity) {$6}
 
-	@Override
-	public void onActivitySaveInstanceState(Activity activity, Bundle bundle) {$7}
+    @Override
+    public void onActivitySaveInstanceState(Activity activity, Bundle bundle) {$7}
 
-	@Override
-	public void onActivityDestroyed(final Activity activity) {$8}
+    @Override
+    public void onActivityDestroyed(final Activity activity) {$8}
 }
 endsnippet
 
@@ -560,7 +527,7 @@ public class $2 extends $1 {
         if (attrs == null) {
             TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.$2, defStyleAttr, 0);
             // get resources
-			$0
+            $0
             a.recycle();
         }
     }
@@ -620,13 +587,13 @@ import com.enova.$1.base.BasePresenter;
 
 public interface ${2:`!p snip.rv=fn[0:fn.find('.')]`} {
 
-	public interface View {
-		$3
-	}
+    public interface View {
+        $3
+    }
 
-	public interface Presenter extends BasePresenter {
-		$0
-	}
+    public interface Presenter extends BasePresenter {
+        $0
+    }
 }
 endsnippet
 
@@ -663,7 +630,7 @@ public class ${2:`!p snip.rv=fn[0:fn.find('.')]`} implements $3Contract.Presente
 
     }
 
-	$0
+    $0
 }
 endsnippet
 
@@ -687,7 +654,7 @@ import android.support.test.espresso.matcher.ViewMatchers.*;
 @RunWith(AndroidJUnit4.class)
 public class ${1:`!p snip.rv=fn[0:fn.find('.')]`} {
 
-	@Rule
+    @Rule
     public ActivityTestRule<${2:`!p snip.rv=re.sub(r'[Tt]ests?', '', fn[0:fn.find('.')])`}> mActivityRule = new ActivityTestRule<>($2.class, false, true);
 
     @Before

@@ -1,5 +1,4 @@
 # This is Git's per-user configuration file.
-[user]
 # Please adapt and uncomment the following lines:
 #	name = William Best
 #	email = wbest@enova.com
@@ -24,7 +23,7 @@
     feature = flow feature
     stat = diff --stat --color
 	stash-rename = "!_() { rev=$(git rev-parse $1) && git stash drop $1 || exit 1 ; git stash store -m \"$2\" $rev; }; _"
-    chlogm = !sh -c 'git log $1...$2  --pretty=format:\" - %s [view commit](http://git.enova.com/$3/$4/commit/%H) \"' -
+    chlogm = !sh -c 'git log $1...$2  --pretty=format:\" - %s [view commit](http://git.enova.com/mobile/$3/commit/%H) \"' -
 [hub]
 	host = git.enova.com
 [github]

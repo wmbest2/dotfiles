@@ -199,6 +199,19 @@ set wildignore-=\docs
 " Plugin Setup {{{
 
 let g:gofmt_command = "/usr/local/go/bin/gofmt"
+let g:gometalinter_command = "$GOPATH/bin/gometalinter"
+
+let g:go_highlight_operators = 1
+let g:go_highlight_functions = 1
+let g:go_highlight_methods = 1
+let g:go_highlight_fields = 1
+let g:go_highlight_types = 1
+let g:go_highlight_build_constraints = 1
+
+let g:go_metalinter_autosave = 1
+let g:go_metalinter_autosave_enabled = ['vet', 'golint']
+
+let g:go_term_enabled = 1
 
 let g:syntastic_disabled_filetypes=['java', 'cucumber']
 let g:syntastic_java_checkers=['']
