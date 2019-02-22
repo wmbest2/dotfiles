@@ -4,7 +4,7 @@
 
 # VARIABLES
 DOTFILES="wmbest2/dotfiles"
-ruby_version=2.3.3
+ruby_version=2.6.1
 
 case "$OSTYPE" in
   solaris*) os="SOLARIS" ;;
@@ -98,9 +98,9 @@ brew_install() {
 }
 
 install_pip() {
-    if ! command_exists pip; then
+    if ! command_exists pip3; then
         header "Installing pip"
-        sudo easy_install pip
+        sudo easy_install pip3
         success "Installed pip"
     else
         success "pip already installed"
@@ -110,11 +110,11 @@ install_pip() {
 pip_install() {
   local package=$1
 
-  pip list --format=columns | grep ${package}
+  pip3 list --format=columns | grep ${package}
   if [ $? = 0 ]; then
     log "${package} already installed"
   else
-    pip install --user $package
+    pip3 install --user $package
     success "Installed ${package}"
   fi
 }
@@ -123,15 +123,23 @@ install_mac_dependencies() {
     if [ "$os" == "OSX" ]; then
         header "Installing Mac only Dependencies"
         brew install coreutils findutils gnu-tar gnu-sed gawk gnutls gnu-indent gnu-getopt
+        brew cask install java
         brew cask install iterm2
         brew cask install alfred
         brew cask install marshallofsound-google-play-music-player
         brew cask install spectacle
         brew cask install macvim
+        brew cask install dash
+        brew cask install google-chrome
         brew tap caskroom/fonts
         brew cask install font-source-code-pro-for-powerline
     else
         header "Skipping Mac only Dependencies"
+        warn "Would have installed:"
+        log "Java"
+        log "Google Chrome"
+        log "Google Play Music Player"
+        log "Source Code Pro for Powerline"
     fi
 }
 
@@ -144,7 +152,7 @@ brew_cellar=$(brew --cellar)
 
 header "Installing Brew Dependencies"
 brew_install ruby-install -HEAD
-brew_install "hub"
+brew_install "lab"
 brew_install "python"
 brew_install "chruby"
 brew_install "pow"
@@ -152,13 +160,16 @@ brew_install "yadm"
 
 install_mac_dependencies
 
+brew_install "kotlin"
+brew_install "gradle"
+
 header "Installing Ruby"
 install_ruby ${ruby_version}
 source /usr/local/opt/chruby/share/chruby/chruby.sh
 chruby ruby-${ruby_version}
 
 header "Installing Gems"
-gem install powify
+gem install powify --user-install
 
 #Install Dotfiles
 header "Installing dot files"
