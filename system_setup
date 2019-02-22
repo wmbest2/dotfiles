@@ -152,7 +152,7 @@ brew_cellar=$(brew --cellar)
 
 header "Installing Brew Dependencies"
 brew_install ruby-install -HEAD
-brew_install "lab"
+brew_install "zaquestion/tap/lab"
 brew_install "python"
 brew_install "chruby"
 brew_install "pow"
