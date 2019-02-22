@@ -75,7 +75,7 @@ set laststatus=2
 " Use 256 colours (Use this setting only if your terminal supports 256 colours)
 set t_Co=256
 
-set gfn=Source\ Code\ Pro:h14
+set gfn=Source\ Code\ Pro\ for\ Powerline:h14
 set background=dark
 colorscheme solarized
 
