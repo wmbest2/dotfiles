@@ -135,9 +135,6 @@ pip_install() {
   fi
 }
 
-A
-
-
 install_apps() {
     if [ "$os" == "OSX" ]; then
         header "Installing Mac only Dependencies"
