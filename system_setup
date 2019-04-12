@@ -97,6 +97,22 @@ brew_install() {
   fi
 }
 
+brew_cask_install() {
+  local package=$1
+
+  if [ "$os" == "OSX" ]; then
+    brew cask list | grep ${package} &> /dev/null
+    if [ $? = 0 ]; then
+        log "${package} already installed"
+        warn "Update with 'brew cask update ${package}'"
+    else
+        brew cask install $package
+    fi
+  else
+    warn "Would have installed ${package}"
+  fi
+}
+
 install_pip() {
     if ! command_exists pip3; then
         header "Installing pip"
@@ -110,7 +126,7 @@ install_pip() {
 pip_install() {
   local package=$1
 
-  pip3 list --format=columns | grep ${package}
+  pip3 list --format=columns | grep ${package} &> /dev/null
   if [ $? = 0 ]; then
     log "${package} already installed"
   else
@@ -119,28 +135,36 @@ pip_install() {
   fi
 }
 
-install_mac_dependencies() {
+A
+
+
+install_apps() {
     if [ "$os" == "OSX" ]; then
         header "Installing Mac only Dependencies"
         brew install coreutils findutils gnu-tar gnu-sed gawk gnutls gnu-indent gnu-getopt
-        brew cask install java
-        brew cask install iterm2
-        brew cask install alfred
-        brew cask install marshallofsound-google-play-music-player
-        brew cask install spectacle
-        brew cask install macvim
-        brew cask install dash
-        brew cask install google-chrome
-        brew tap caskroom/fonts
-        brew cask install font-source-code-pro-for-powerline
-    else
-        header "Skipping Mac only Dependencies"
-        warn "Would have installed:"
-        log "Java"
-        log "Google Chrome"
-        log "Google Play Music Player"
-        log "Source Code Pro for Powerline"
     fi
+
+    header "Installing Development Tools"
+    brew_cask_install java
+    brew_cask_install iterm2
+    brew_cask_install macvim
+    brew tap caskroom/fonts
+    brew_cask_install aerial
+    brew_cask_install font-source-code-pro-for-powerline
+    brew_cask_install postman
+    brew_cask_install db-browser-for-sqlite
+    brew_cask_install appium
+
+    header "Installing Utilities"
+    brew_cask_install alfred
+    brew_cask_install spectacle
+    brew_cask_install dash
+
+    header "Installing Applications"
+    brew_cask_install google-chrome
+    brew_cask_install steam
+    brew_cask_install marshallofsound-google-play-music-player
+    brew_cask_install slack
 }
 
 ## Main Script
@@ -157,8 +181,12 @@ brew_install "python"
 brew_install "chruby"
 brew_install "pow"
 brew_install "yadm"
+brew_install "cloc"
+brew_install "npm"
+brew_install "cocoapods"
 
-install_mac_dependencies
+# Do these before Kotlin and Gradle to get Java
+install_apps
 
 brew_install "kotlin"
 brew_install "gradle"
@@ -181,6 +209,9 @@ install_pip
 pip_install "mkdocs"
 pip_install "mkdocs-material"
 pip_install "powerline-status"
+
+header "Installing npm Dependencies"
+npm install -g apollo
 
 source ~/.bash_profile
 

@@ -25,7 +25,7 @@ call vundle#begin()
 " Plugins {{{
 
 Plugin 'EasyGrep'
-Plugin 'Gundo'
+Plugin 'sjl/gundo.vim'
 Plugin 'Tabular'
 Plugin 'The-NERD-Commenter'
 Plugin 'The-NERD-tree'
@@ -217,6 +217,10 @@ let g:syntastic_disabled_filetypes=['java', 'cucumber']
 let g:syntastic_java_checkers=['']
 
 let g:UltiSnipsSnippetDirectories = ['~/.vim/UltiSnips', '~/.vim/bundle/vim-snippets/UltiSnips', 'UltiSnips']
+
+if has('python3')
+    let g:gundo_prefer_python3 = 1
+endif
 
 " }}}
 " Filetype Specific Settings {{{ 

@@ -2,8 +2,6 @@
 # Please adapt and uncomment the following lines:
 #	name = William Best
 #	email = wbest@enova.com
-[user]
-	email = wbest@enova.com
 [credential]
 	helper = osxkeychain
 [alias]
@@ -35,3 +33,5 @@
 	status = auto
 [core]
 	editor = vim
+[user]
+	email = bill.best@yello.co

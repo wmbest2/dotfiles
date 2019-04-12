@@ -148,6 +148,7 @@ powerline-daemon -q
 ifsource ~/.travis/travis.sh
 
 # Add Hub as git alternative
-eval "$(hub alias -s)"
+#eval "$(hub alias -s)"
+alias git=lab
 
 export PATH="$HOME/.fastlane/bin:$PATH"
