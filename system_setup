@@ -104,7 +104,7 @@ brew_cask_install() {
     brew cask list | grep ${package} &> /dev/null
     if [ $? = 0 ]; then
         log "${package} already installed"
-        warn "Update with 'brew cask update ${package}'"
+        warn "Update with 'brew cask upgrade ${package}'"
     else
         brew cask install $package
     fi
