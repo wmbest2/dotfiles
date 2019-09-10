@@ -18,7 +18,10 @@ ifsource ~/.env
 ifsource ~/.bash_aliases
 ifsource ~/.nerdtree_aliases
 ifsource ~/.functions
+eval "$(pyenv init -)"
+eval "$(rbenv init -)"
 ifsource $(brew --prefix)/etc/bash_completion
+ifsource $(pyenv prefix)/bin/virtualenvwrapper.sh
 
 
 # don't put duplicate lines or lines starting with space in the history.
@@ -133,9 +136,7 @@ source /usr/local/share/chruby/auto.sh 2> /dev/null
 
 [ -d "~/Work/8b/bin" ] && export PATH="~/Work/8b/bin:$PATH"
 
-PYTHON_ROOT=~/Library/Python/2.7/lib/python/site-packages
-export POWERLINE_HOME=$PYTHON_ROOT/powerline
-export PATH=$HOME/Library/Python/2.7/bin:$PATH
+export POWERLINE_HOME=$(pyenv prefix)/lib/python2.7/site-packages/powerline
 
 powerline-daemon -k 1> /dev/null
 POWERLINE_BASH_CONTINUATION=1
@@ -148,7 +149,6 @@ powerline-daemon -q
 ifsource ~/.travis/travis.sh
 
 # Add Hub as git alternative
-#eval "$(hub alias -s)"
-alias git=lab
+eval "$(hub alias -s)"
+#alias git=lab
 
-export PATH="$HOME/.fastlane/bin:$PATH"

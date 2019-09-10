@@ -113,26 +113,20 @@ brew_cask_install() {
   fi
 }
 
-install_pip() {
-    if ! command_exists pip3; then
-        header "Installing pip"
-        sudo easy_install pip3
-        success "Installed pip"
-    else
-        success "pip already installed"
-    fi
-}
-
 pip_install() {
   local package=$1
 
-  pip3 list --format=columns | grep ${package} &> /dev/null
+  pip list --format=columns | grep ${package} &> /dev/null
   if [ $? = 0 ]; then
     log "${package} already installed"
   else
-    pip3 install --user $package
+    pip install --user $package
     success "Installed ${package}"
   fi
+}
+
+install_jabba() {
+    curl -sL https://github.com/shyiko/jabba/raw/master/install.sh | bash && . ~/.jabba/jabba.sh
 }
 
 install_apps() {
@@ -142,7 +136,6 @@ install_apps() {
     fi
 
     header "Installing Development Tools"
-    brew_cask_install java
     brew_cask_install iterm2
     brew_cask_install macvim
     brew tap caskroom/fonts
@@ -150,12 +143,19 @@ install_apps() {
     brew_cask_install font-source-code-pro-for-powerline
     brew_cask_install postman
     brew_cask_install db-browser-for-sqlite
-    brew_cask_install appium
+
+    header "Installing Jetbrains Suite"
+    brew_cask_install intellij-idea
+    brew_cask_install pycharm
+    brew_cask_install datagrip
+    brew_cask_install appcode
+    brew_cask_install android-studio
 
     header "Installing Utilities"
     brew_cask_install alfred
     brew_cask_install spectacle
     brew_cask_install dash
+    brew_cask_install viscosity
 
     header "Installing Applications"
     brew_cask_install google-chrome
@@ -175,12 +175,18 @@ header "Installing Brew Dependencies"
 brew_install ruby-install -HEAD
 brew_install "zaquestion/tap/lab"
 brew_install "python"
-brew_install "chruby"
+brew_install "rbenv"
+brew_install "pyenv"
 brew_install "pow"
 brew_install "yadm"
 brew_install "cloc"
 brew_install "npm"
 brew_install "cocoapods"
+
+header "Install Java & Jabba"
+install_jabba
+jabba install adopt@1.8-0
+
 
 # Do these before Kotlin and Gradle to get Java
 install_apps
@@ -194,6 +200,7 @@ source /usr/local/opt/chruby/share/chruby/chruby.sh
 chruby ruby-${ruby_version}
 
 header "Installing Gems"
+eval "$(rbenv init -)"
 gem install powify --user-install
 
 #Install Dotfiles
@@ -202,10 +209,13 @@ install_dotfiles
 
 # Install pip
 header "Installing pip Dependencies"
-install_pip
+eval "$(pyenv init -)"
+pyenv install 2.7.10
 pip_install "mkdocs"
 pip_install "mkdocs-material"
 pip_install "powerline-status"
+pip_install "virtualenv"
+pip_install "virtualenvwrapper"
 
 header "Installing npm Dependencies"
 npm install -g apollo
