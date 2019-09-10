@@ -1,0 +1,212 @@
+#!/usr/bin/env bash
+
+{ # this ensures the entire script is downloaded #
+
+# VARIABLES
+DOTFILES="wmbest2/dotfiles"
+ruby_version=2.6.1
+
+case "$OSTYPE" in
+  solaris*) os="SOLARIS" ;;
+  darwin*)  os="OSX" ;; 
+  linux*)   os="LINUX" ;;
+  bsd*)     os="BSD" ;;
+  msys*)    os="WINDOWS" ;;
+  *)        os="unknown: $OSTYPE" ;;
+esac
+
+# colors
+reset="\033[0m"
+red="\033[31m"
+yellow="\033[33m"
+green="\033[32m"
+cyan="\033[36m"
+
+# log functions
+log() {
+  printf "$cyan$1$reset\n"
+}
+
+header() {
+  printf "\n$green== $1 ==$reset\n"
+}
+
+success() {
+  printf "👍 $green $1$reset\n"
+}
+
+warn() {
+  printf "$yellow[WARNING] $1$reset\n"
+}
+
+error() {
+  printf "$red[ERROR] $1$reset\n"
+}
+
+command_exists() {
+  type "$1" &> /dev/null;
+}
+
+install_ruby() {
+    local version=$1
+    ruby-install | grep ${version} &> /dev/null
+    if [ $? = 1 ]; then
+        ruby-install ruby ${version}
+        success "Ruby ${version} installed"
+    else
+        success "Ruby ${version} already installed"
+    fi
+}
+
+install_homebrew() {
+  if ! command_exists brew; then
+    local wasLinux=0
+    if [[ "$os" == "OSX" ]]; then
+        /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    elif [[ "$os" == "LINUX" ]]; then
+        ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install)"
+        waslinux=1
+    fi
+    success "Installed Homebrew"
+    [ waslinux -eq 1 ] && log "Linux brew may require running\n echo 'export PATH=\"$HOME/.linuxbrew/bin:$PATH\"' >> ~/.bashrc"
+  else
+    log "Homebrew already installed"
+  fi
+}
+
+brew_install() {
+  local package=$1
+
+  if [[ -d "${brew_cellar}/${package}" ]]; then
+    log "${package} already installed"
+  elif [[ "${package}" == "build-essential" ]]; then
+    true
+  else
+    brew install $package
+    success "Installed ${package}"
+  fi
+}
+
+brew_cask_install() {
+  local package=$1
+
+  if [ "$os" == "OSX" ]; then
+    brew cask list | grep ${package} &> /dev/null
+    if [ $? = 0 ]; then
+        log "${package} already installed"
+        warn "Update with 'brew cask upgrade ${package}'"
+    else
+        brew cask install $package
+    fi
+  else
+    warn "Would have installed ${package}"
+  fi
+}
+
+pip_install() {
+  local package=$1
+
+  pip list --format=columns | grep ${package} &> /dev/null
+  if [ $? = 0 ]; then
+    log "${package} already installed"
+  else
+    pip install --user $package
+    success "Installed ${package}"
+  fi
+}
+
+install_jabba() {
+    curl -sL https://github.com/shyiko/jabba/raw/master/install.sh | bash && . ~/.jabba/jabba.sh
+    echo "adopt@1.8-0" > .jabbarc
+    # switch to the JDK specified in .jabbarc (since 0.5.0)
+    jabba use
+}
+
+install_apps() {
+    if [ "$os" == "OSX" ]; then
+        header "Installing Mac only Dependencies"
+        brew install coreutils findutils gnu-tar gnu-sed gawk gnutls gnu-indent gnu-getopt
+    fi
+
+    header "Installing Development Tools"
+    brew_cask_install iterm2
+    brew_cask_install macvim
+    brew tap caskroom/fonts
+    brew_cask_install aerial
+    brew_cask_install font-source-code-pro-for-powerline
+    brew_cask_install postman
+    brew_cask_install db-browser-for-sqlite
+
+    header "Installing Jetbrains Suite"
+    brew_cask_install intellij-idea
+    brew_cask_install pycharm
+    brew_cask_install datagrip
+    brew_cask_install appcode
+    brew_cask_install android-studio
+
+    header "Installing Utilities"
+    brew_cask_install alfred
+    brew_cask_install spectacle
+    brew_cask_install dash
+    brew_cask_install viscosity
+
+    header "Installing Applications"
+    brew_cask_install google-chrome
+    brew_cask_install steam
+    brew_cask_install marshallofsound-google-play-music-player
+    brew_cask_install slack
+}
+
+## Main Script
+
+# Install homebrew if it isn't already
+header "Checking for Homebrew"
+install_homebrew
+brew_cellar=$(brew --cellar)
+
+header "Installing Brew Dependencies"
+brew_install ruby-install -HEAD
+brew_install "zaquestion/tap/lab"
+brew_install "python"
+brew_install "rbenv"
+brew_install "pyenv"
+brew_install "pow"
+brew_install "cloc"
+brew_install "npm"
+brew_install "cocoapods"
+
+header "Install Java & Jabba"
+install_jabba
+
+# Do these before Kotlin and Gradle to get Java
+install_apps
+
+brew_install "kotlin"
+brew_install "gradle"
+
+header "Installing Ruby"
+install_ruby ${ruby_version}
+source /usr/local/opt/chruby/share/chruby/chruby.sh
+chruby ruby-${ruby_version}
+
+header "Installing Gems"
+eval "$(rbenv init -)"
+gem install powify --user-install
+
+# Install pip
+header "Installing pip Dependencies"
+eval "$(pyenv init -)"
+pyenv install 2.7.10
+pip_install "mkdocs"
+pip_install "mkdocs-material"
+pip_install "powerline-status"
+pip_install "virtualenv"
+pip_install "virtualenvwrapper"
+
+header "Installing npm Dependencies"
+npm install -g apollo
+
+source ~/.bash_profile
+
+}
+

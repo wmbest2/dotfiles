@@ -152,3 +152,5 @@ ifsource ~/.travis/travis.sh
 eval "$(hub alias -s)"
 #alias git=lab
 
+
+[ -s "/Users/bill.best/.jabba/jabba.sh" ] && source "/Users/bill.best/.jabba/jabba.sh"
