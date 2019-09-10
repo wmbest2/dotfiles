@@ -48,11 +48,12 @@ command_exists() {
 }
 
 install_dotfiles() {
-    $(yadm clone git@github.com:$DOTFILES.git)
+    $(yadm clone git@github.com:$DOTFILES.git --bootstrap)
     if [ $? -ne 0 ]; then
         log "yadm already setup, fetching lastest changes"
         yadm fetch
         yadm pull
+        yadm bootstrap
     fi
     success "dot files installed"
 }
@@ -98,7 +99,5 @@ brew_install "yadm"
 #Install Dotfiles
 header "Installing dot files"
 install_dotfiles
-
-yadm bootstrap
 
 }

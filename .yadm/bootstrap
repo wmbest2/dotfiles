@@ -117,9 +117,8 @@ pip_install() {
 
 install_jabba() {
     curl -sL https://github.com/shyiko/jabba/raw/master/install.sh | bash && . ~/.jabba/jabba.sh
-    echo "adopt@1.8-0" > .jabbarc
-    # switch to the JDK specified in .jabbarc (since 0.5.0)
-    jabba use
+    jabba install adopt@1.8-0
+    jabba alias default adopt@1.8-0
 }
 
 install_apps() {
