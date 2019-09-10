@@ -99,6 +99,6 @@ brew_install "yadm"
 header "Installing dot files"
 install_dotfiles
 
-yadm boostrap
+yadm bootstrap
 
 }
