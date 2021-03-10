@@ -23,6 +23,12 @@ eval "$(rbenv init -)"
 ifsource $(brew --prefix)/etc/bash_completion
 ifsource $(pyenv prefix)/bin/virtualenvwrapper.sh
 
+if [ -f /usr/share/powerline/bindings/bash/powerline.sh ]; then
+  powerline-daemon -q
+  POWERLINE_BASH_CONTINUATION=1
+  POWERLINE_BASH_SELECT=1
+  source /usr/share/powerline/bindings/bash/powerline.sh
+fi
 
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
@@ -135,15 +141,6 @@ source /usr/local/share/chruby/chruby.sh 2> /dev/null
 source /usr/local/share/chruby/auto.sh 2> /dev/null
 
 [ -d "~/Work/8b/bin" ] && export PATH="~/Work/8b/bin:$PATH"
-
-export POWERLINE_HOME=$(pyenv prefix)/lib/python2.7/site-packages/powerline
-
-powerline-daemon -k 1> /dev/null
-POWERLINE_BASH_CONTINUATION=1
-POWERLINE_BASH_SELECT=1
-POWERLINE_CONFIG_COMMAND=powerline-config
-. $POWERLINE_HOME/bindings/bash/powerline.sh
-powerline-daemon -q
 
 # added by travis gem
 ifsource ~/.travis/travis.sh
